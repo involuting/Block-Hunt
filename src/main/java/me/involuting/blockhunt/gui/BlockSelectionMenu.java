@@ -17,7 +17,7 @@ public class BlockSelectionMenu extends Menu {
     public BlockSelectionMenu(Player player,
                               PlayerManager playerManager, DisguiseManager disguiseManager) {
 
-        super("§8Select Disguise", MenuSize.FOUR, player);
+        super("§8Select Disguise", MenuSize.SIX, player);
 
         this.disguiseManager = disguiseManager;
     }

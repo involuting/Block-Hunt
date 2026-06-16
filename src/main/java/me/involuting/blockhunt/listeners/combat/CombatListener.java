@@ -1,5 +1,6 @@
 package me.involuting.blockhunt.listeners.combat;
 
+import me.involuting.blockhunt.BlockHunt;
 import me.involuting.blockhunt.game.arena.Arena;
 import me.involuting.blockhunt.game.disguise.manager.DisguiseManager;
 import me.involuting.blockhunt.game.player.BlockHuntPlayer;
@@ -14,6 +15,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.entity.PlayerDeathEvent;
 
 import java.util.UUID;
 
@@ -91,21 +93,35 @@ public class CombatListener implements Listener {
         winCondition.checkHuntersWin(arena);
     }
 
+    @EventHandler
+    public void onDeath(PlayerDeathEvent event){
+        Player player = event.getPlayer();
+
+        event.setDeathMessage(null);
+
+        event.setShowDeathMessages(false);
+    }
+
     private void eliminateHider(Player player) {
 
         BlockHuntPlayer data = playerManager.get(player);
 
         disguiseManager.removeDisguise(player);
 
-        data.addDeath();
-        data.setRole(Role.SPECTATOR);
+        Bukkit.getScheduler().runTask(
+                BlockHunt.getInstance(),
+                () -> {
 
-        player.setGameMode(GameMode.SPECTATOR);
+                    data.addDeath();
+                    data.setRole(Role.SPECTATOR);
 
-        player.sendMessage("");
-        player.sendMessage("§c§lELIMINATED");
-        player.sendMessage("§7You were found by a hunter.");
-        player.sendMessage("");
+                    player.setGameMode(GameMode.SPECTATOR);
+
+                    player.teleport(
+                            player.getLocation().clone().add(0, 1, 0)
+                    );
+                }
+        );
     }
 
     private void broadcast(Arena arena, String message) {

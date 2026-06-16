@@ -73,7 +73,7 @@ public final class BlockHunt extends JavaPlugin {
         this.arenaManager = new ArenaManager(arenaFile);
 
         this.gameManager = new GameManager(
-                playerManager
+                arenaManager, playerManager, disguiseManager
         );
 
         this.npcManager = new NPCManager();

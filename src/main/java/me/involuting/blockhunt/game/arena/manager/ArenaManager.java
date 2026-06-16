@@ -1,6 +1,5 @@
 package me.involuting.blockhunt.game.arena.manager;
 
-
 import me.involuting.blockhunt.config.ArenaFile;
 import me.involuting.blockhunt.game.arena.Arena;
 import me.involuting.blockhunt.util.LocationUtil;
@@ -32,39 +31,28 @@ public class ArenaManager {
     }
 
     public void unregisterArena(String name) {
-        arenas.remove(
-                name.toLowerCase()
-        );
+        arenas.remove(name.toLowerCase());
     }
 
     public Arena getArena(String name) {
-        return arenas.get(
-                name.toLowerCase()
-        );
+        return arenas.get(name.toLowerCase());
     }
 
     public Arena getArena(Player player) {
-        return playerArenas.get(
-                player.getUniqueId()
-        );
+        return playerArenas.get(player.getUniqueId());
     }
 
     public boolean isInArena(Player player) {
-        return playerArenas.containsKey(
-                player.getUniqueId()
-        );
+        return playerArenas.containsKey(player.getUniqueId());
     }
 
-    public void addPlayer(Player player,
-                          Arena arena) {
+    public void addPlayer(Player player, Arena arena) {
 
         if (isInArena(player)) {
             removePlayer(player);
         }
 
-        arena.addPlayer(
-                player.getUniqueId()
-        );
+        arena.addPlayer(player.getUniqueId());
 
         playerArenas.put(
                 player.getUniqueId(),
@@ -77,14 +65,10 @@ public class ArenaManager {
         Arena arena = getArena(player);
 
         if (arena != null) {
-            arena.removePlayer(
-                    player.getUniqueId()
-            );
+            arena.removePlayer(player.getUniqueId());
         }
 
-        playerArenas.remove(
-                player.getUniqueId()
-        );
+        playerArenas.remove(player.getUniqueId());
     }
 
     public Collection<Arena> getArenas() {
@@ -95,92 +79,102 @@ public class ArenaManager {
 
         arenas.clear();
 
-        FileConfiguration config =
-                arenaFile.getConfig();
+        FileConfiguration config = arenaFile.getConfig();
 
-        ConfigurationSection section =
+        ConfigurationSection arenasSection =
                 config.getConfigurationSection("arenas");
 
-        if (section == null) {
+        if (arenasSection == null) {
             return;
         }
 
-        for (String arenaName : section.getKeys(false)) {
+        for (String arenaName : arenasSection.getKeys(false)) {
 
-            String path =
-                    "arenas." + arenaName;
+            String path = "arenas." + arenaName;
 
-            Arena arena =
-                    new Arena(arenaName);
+            Arena arena = new Arena(arenaName);
 
-            arena.setLobbySpawn(
-                    LocationUtil.loadLocation(
-                            config.getConfigurationSection(
-                                    path + ".lobby"
-                            )
-                    )
-            );
-
-            arena.setHiderSpawn(
-                    LocationUtil.loadLocation(
-                            config.getConfigurationSection(
-                                    path + ".hider-spawn"
-                            )
-                    )
-            );
-
-            arena.setHunterSpawn(
-                    LocationUtil.loadLocation(
-                            config.getConfigurationSection(
-                                    path + ".hunter-spawn"
-                            )
-                    )
-            );
+            loadLocations(config, path, arena);
 
             registerArena(arena);
         }
     }
 
+    private void loadLocations(FileConfiguration config,
+                               String path,
+                               Arena arena) {
+
+        ConfigurationSection lobbySection =
+                config.getConfigurationSection(path + ".lobby");
+
+        if (lobbySection != null) {
+            arena.setLobbySpawn(
+                    LocationUtil.loadLocation(lobbySection)
+            );
+        }
+
+        ConfigurationSection hiderSection =
+                config.getConfigurationSection(path + ".hider-spawn");
+
+        if (hiderSection != null) {
+            arena.setHiderSpawn(
+                    LocationUtil.loadLocation(hiderSection)
+            );
+        }
+
+        ConfigurationSection hunterSection =
+                config.getConfigurationSection(path + ".hunter-spawn");
+
+        if (hunterSection != null) {
+            arena.setHunterSpawn(
+                    LocationUtil.loadLocation(hunterSection)
+            );
+        }
+    }
+
     public void saveArenas() {
 
-        FileConfiguration config =
-                arenaFile.getConfig();
+        FileConfiguration config = arenaFile.getConfig();
 
         config.set("arenas", null);
 
         for (Arena arena : arenas.values()) {
 
-            String path =
-                    "arenas." + arena.getName();
+            String path = "arenas." + arena.getName();
 
-            if (arena.getLobbySpawn() != null) {
-                LocationUtil.saveLocation(
-                        config.createSection(
-                                path + ".lobby"
-                        ),
-                        arena.getLobbySpawn()
-                );
-            }
+            saveLocation(
+                    config,
+                    path + ".lobby",
+                    arena.getLobbySpawn()
+            );
 
-            if (arena.getHiderSpawn() != null) {
-                LocationUtil.saveLocation(
-                        config.createSection(
-                                path + ".hider-spawn"
-                        ),
-                        arena.getHiderSpawn()
-                );
-            }
+            saveLocation(
+                    config,
+                    path + ".hider-spawn",
+                    arena.getHiderSpawn()
+            );
 
-            if (arena.getHunterSpawn() != null) {
-                LocationUtil.saveLocation(
-                        config.createSection(
-                                path + ".hunter-spawn"
-                        ),
-                        arena.getHunterSpawn()
-                );
-            }
+            saveLocation(
+                    config,
+                    path + ".hunter-spawn",
+                    arena.getHunterSpawn()
+            );
         }
 
         arenaFile.save();
+    }
+
+    private void saveLocation(FileConfiguration config,
+                              String path,
+                              org.bukkit.Location location) {
+
+        if (location == null) {
+            return;
+        }
+
+        LocationUtil.saveLocation(
+                config.createSection(path),
+                location
+        );
     }
 }

@@ -2,15 +2,18 @@ package me.involuting.blockhunt.game.manager;
 
 import me.involuting.blockhunt.BlockHunt;
 import me.involuting.blockhunt.game.arena.Arena;
+import me.involuting.blockhunt.game.arena.manager.ArenaManager;
+import me.involuting.blockhunt.game.disguise.manager.DisguiseManager;
 import me.involuting.blockhunt.game.player.BlockHuntPlayer;
+import me.involuting.blockhunt.game.player.manager.PlayerManager;
 import me.involuting.blockhunt.game.role.Role;
 import me.involuting.blockhunt.game.state.GameState;
 import me.involuting.blockhunt.game.task.game.GameTask;
 import me.involuting.blockhunt.game.task.lobby.LobbyTask;
 import me.involuting.blockhunt.game.win.WinCondition;
-import me.involuting.blockhunt.game.player.manager.PlayerManager;
 import me.involuting.blockhunt.util.ItemBuilder;
 import org.bukkit.Bukkit;
+import org.bukkit.GameMode;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 
@@ -23,29 +26,49 @@ public class GameManager {
     private static final int HIDE_TIME = 30;
     private static final int GAME_TIME = 300;
 
-    private final Map<String, LobbyTask> lobbyTasks = new HashMap<>();
+    private final ArenaManager arenaManager;
 
     private final PlayerManager playerManager;
+
+    private  final DisguiseManager disguiseManager;
+
     private final Map<String, GameTask> activeGames = new HashMap<>();
     private final Map<String, LobbyTask> countdowns = new HashMap<>();
 
-    public GameManager(PlayerManager playerManager) {
+    public GameManager(ArenaManager arenaManager, PlayerManager playerManager, DisguiseManager disguiseManager) {
+        this.arenaManager = arenaManager;
         this.playerManager = playerManager;
+        this.disguiseManager = disguiseManager;
     }
 
     public boolean startGame(Arena arena) {
-        stopCountdown(arena);
-        if (arena == null
-                || arena.getState() != GameState.WAITING
-                || isRunning(arena)) {
+
+        if (arena == null) {
             return false;
         }
 
-        if (arena.getLobbySpawn() == null
-                || arena.getHunterSpawn() == null
-                || arena.getHiderSpawn() == null) {
+        stopCountdown(arena);
 
-            broadcast(arena, "§cArena setup is incomplete.");
+        if (arena.getState() != GameState.WAITING) {
+            return false;
+        }
+
+        if (isRunning(arena)) {
+            return false;
+        }
+
+        if (arena.getLobbySpawn() == null) {
+            broadcast(arena, "§cLobby spawn is not set.");
+            return false;
+        }
+
+        if (arena.getHunterSpawn() == null) {
+            broadcast(arena, "§cHunter spawn is not set.");
+            return false;
+        }
+
+        if (arena.getHiderSpawn() == null) {
+            broadcast(arena, "§cHider spawn is not set.");
             return false;
         }
 
@@ -92,10 +115,7 @@ public class GameManager {
 
         GameTask task = new GameTask(
                 arena,
-                new WinCondition(
-                        playerManager,
-                        this
-                ),
+                new WinCondition(playerManager, this),
                 HIDE_TIME,
                 GAME_TIME
         );
@@ -122,12 +142,13 @@ public class GameManager {
         player.setHealth(20.0);
         player.setFoodLevel(20);
         player.setFireTicks(0);
+
         player.setExp(0F);
         player.setLevel(0);
 
-        player.setInvisible(false);
         player.setAllowFlight(false);
         player.setFlying(false);
+        player.setInvisible(false);
     }
 
     private void setupHunter(Player player,
@@ -136,13 +157,10 @@ public class GameManager {
 
         data.setRole(Role.HUNTER);
 
-        player.teleport(
-                arena.getHunterSpawn()
-        );
+        player.teleport(arena.getHunterSpawn());
 
         player.sendMessage("§c§lHUNTER");
         player.sendMessage("§7Find all hiders.");
-
     }
 
     private void setupHider(Player player,
@@ -151,9 +169,7 @@ public class GameManager {
 
         data.setRole(Role.HIDER);
 
-        player.teleport(
-                arena.getHiderSpawn()
-        );
+        player.teleport(arena.getHiderSpawn());
 
         player.getInventory().setItem(
                 0,
@@ -164,9 +180,7 @@ public class GameManager {
         );
 
         player.sendMessage("§a§lHIDER");
-        player.sendMessage(
-                "§7Hide before hunters are released."
-        );
+        player.sendMessage("§7Hide before hunters are released.");
     }
 
     public void endGame(Arena arena) {
@@ -174,6 +188,8 @@ public class GameManager {
         if (arena == null) {
             return;
         }
+
+        stopCountdown(arena);
 
         GameTask task = activeGames.remove(
                 arena.getName().toLowerCase()
@@ -185,7 +201,7 @@ public class GameManager {
 
         arena.setState(GameState.ENDING);
 
-        for (UUID uuid : arena.getPlayers()) {
+        for (UUID uuid : new HashSet<>(arena.getPlayers())) {
 
             Player player = Bukkit.getPlayer(uuid);
 
@@ -193,19 +209,78 @@ public class GameManager {
                 continue;
             }
 
-            BlockHuntPlayer data =
-                    playerManager.get(player);
+            BlockHuntPlayer data = playerManager.get(player);
 
-            data.setRole(Role.SPECTATOR);
+            if (data != null) {
+                data.resetGameData();
+            }
+
+            disguiseManager.removeDisguise(player);
 
             player.getInventory().clear();
+
+            player.setGameMode(GameMode.SURVIVAL);
+            player.setAllowFlight(false);
+            player.setFlying(false);
+            player.setWalkSpeed(0.2F);
+
+            player.setHealth(20.0);
+            player.setFoodLevel(20);
 
             if (arena.getLobbySpawn() != null) {
                 player.teleport(arena.getLobbySpawn());
             }
+
+            player.sendMessage("");
+            player.sendMessage("§6§lBLOCK HUNT");
+            player.sendMessage("§7The game has ended.");
+            player.sendMessage("");
+
+            arenaManager.removePlayer(player);
         }
 
         arena.setState(GameState.WAITING);
+    }
+
+    public void startCountdown(Arena arena) {
+
+        if (arena == null) {
+            return;
+        }
+
+        String key = arena.getName().toLowerCase();
+
+        if (countdowns.containsKey(key)) {
+            return;
+        }
+
+        LobbyTask task = new LobbyTask(
+                arena,
+                this
+        );
+
+        task.runTaskTimer(
+                BlockHunt.getInstance(),
+                20L,
+                20L
+        );
+
+        countdowns.put(key, task);
+    }
+
+    public void stopCountdown(Arena arena) {
+
+        if (arena == null) {
+            return;
+        }
+
+        LobbyTask task = countdowns.remove(
+                arena.getName().toLowerCase()
+        );
+
+        if (task != null) {
+            task.cancel();
+        }
     }
 
     public boolean isRunning(Arena arena) {
@@ -248,40 +323,5 @@ public class GameManager {
         }
 
         return players;
-    }
-
-    public void startCountdown(Arena arena) {
-
-        if (countdowns.containsKey(arena.getName().toLowerCase())) {
-            return;
-        }
-
-        LobbyTask task = new LobbyTask(
-                arena,
-                this
-        );
-
-        task.runTaskTimer(
-                BlockHunt.getInstance(),
-                20L,
-                20L
-        );
-
-        countdowns.put(
-                arena.getName().toLowerCase(),
-                task
-        );
-    }
-
-    public void stopCountdown(Arena arena) {
-
-        LobbyTask task =
-                lobbyTasks.remove(
-                        arena.getName().toLowerCase()
-                );
-
-        if (task != null) {
-            task.cancel();
-        }
     }
 }
