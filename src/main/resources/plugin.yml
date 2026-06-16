@@ -1,0 +1,9 @@
+name: bHunt
+version: '${version}'
+
+main: me.involuting.blockhunt.BlockHunt
+api-version: '26.1.2'
+load: STARTUP
+
+commands:
+  blockhunt:
