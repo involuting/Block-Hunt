@@ -73,7 +73,7 @@ public final class BlockHunt extends JavaPlugin {
                 disguiseRenderer
         );
 
-        this.arenaManager = new ArenaManager(arenaFile);
+        this.arenaManager = new ArenaManager(arenaFile, winCondition);
 
         this.gameManager = new GameManager(
                 arenaManager, playerManager, disguiseManager
@@ -117,7 +117,9 @@ public final class BlockHunt extends JavaPlugin {
 
         getServer().getPluginManager().registerEvents(
                 new InteractListener(
-                        playerManager, disguiseManager
+                        playerManager,
+                        disguiseManager,
+                        tauntManager
                 ),
                 this
         );
@@ -171,7 +173,7 @@ public final class BlockHunt extends JavaPlugin {
         getCommand("blockhunt").setExecutor(
                 new BlockHuntCommand(
                         arenaManager,
-                        gameManager, playerManager, disguiseManager, npcManager
+                        gameManager, playerManager, disguiseManager, npcManager, winCondition
                 )
         );
     }

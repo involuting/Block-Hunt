@@ -179,6 +179,18 @@ public class GameManager {
                         .build()
         );
 
+        player.getInventory()
+                .setItem(1,
+                        new ItemBuilder(Material.ITEM_FRAME)
+                                .name("§aTaunt Selector")
+                                .build());
+
+        player.getInventory()
+                .setItem(1,
+                        new ItemBuilder(Material.NOTE_BLOCK)
+                                .name("§aUse Equipped Taunt")
+                                .build());
+
         player.sendMessage("§a§lHIDER");
         player.sendMessage("§7Hide before hunters are released.");
     }

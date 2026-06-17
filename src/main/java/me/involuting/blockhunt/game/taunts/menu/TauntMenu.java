@@ -28,7 +28,7 @@ public final class TauntMenu {
         Inventory inventory = Bukkit.createInventory(
                 null,
                 27,
-                ChatColor.GOLD + "Taunts"
+                ChatColor.WHITE + "Taunts"
         );
 
         int slot = 10;

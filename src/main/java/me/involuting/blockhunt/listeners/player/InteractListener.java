@@ -3,6 +3,8 @@ package me.involuting.blockhunt.listeners.player;
 import me.involuting.blockhunt.game.disguise.manager.DisguiseManager;
 import me.involuting.blockhunt.game.player.BlockHuntPlayer;
 import me.involuting.blockhunt.game.role.Role;
+import me.involuting.blockhunt.game.taunts.manager.TauntManager;
+import me.involuting.blockhunt.game.taunts.menu.TauntMenu;
 import me.involuting.blockhunt.gui.BlockSelectionMenu;
 import me.involuting.blockhunt.game.player.manager.PlayerManager;
 import org.bukkit.event.EventHandler;
@@ -16,10 +18,12 @@ public class InteractListener implements Listener {
 
     private final PlayerManager playerManager;
     private final DisguiseManager disguiseManager;
+    private final TauntManager tauntManager;
 
-    public InteractListener(PlayerManager playerManager, DisguiseManager disguiseManager) {
+    public InteractListener(PlayerManager playerManager, DisguiseManager disguiseManager, TauntManager tauntManager) {
         this.playerManager = playerManager;
         this.disguiseManager = disguiseManager;
+        this.tauntManager = tauntManager;
     }
 
     @EventHandler
@@ -63,13 +67,13 @@ public class InteractListener implements Listener {
             return;
         }
 
-        if (name.equals("§eTaunt")) {
+        if (name.equals("§aTaunt Selector")) {
 
             event.setCancelled(true);
 
-            event.getPlayer().sendMessage(
-                    "§eTaunts are coming very soon"
-            );
+            new TauntMenu(tauntManager).open(event.getPlayer());
+
+
         }
     }
 }

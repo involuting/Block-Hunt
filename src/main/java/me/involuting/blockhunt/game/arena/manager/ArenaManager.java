@@ -4,6 +4,7 @@ import me.involuting.blockhunt.config.ArenaFile;
 import me.involuting.blockhunt.game.arena.Arena;
 import me.involuting.blockhunt.game.manager.GameManager;
 import me.involuting.blockhunt.game.state.GameState;
+import me.involuting.blockhunt.game.win.WinCondition;
 import me.involuting.blockhunt.util.LocationUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
@@ -24,8 +25,11 @@ public class ArenaManager {
 
     private final ArenaFile arenaFile;
 
-    public ArenaManager(ArenaFile arenaFile) {
+    private final WinCondition winCondition;
+
+    public ArenaManager(ArenaFile arenaFile, WinCondition winCondition) {
         this.arenaFile = arenaFile;
+        this.winCondition = winCondition;
     }
 
     public void registerArena(Arena arena) {
@@ -138,7 +142,7 @@ public class ArenaManager {
 
             String path = "arenas." + arenaName;
 
-            Arena arena = new Arena(arenaName);
+            Arena arena = new Arena(arenaName, winCondition);
 
             loadLocations(config, path, arena);
 

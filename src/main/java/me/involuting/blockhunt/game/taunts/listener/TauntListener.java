@@ -16,119 +16,23 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 
 public final class TauntListener implements Listener {
 
     private final ArenaManager arenaManager;
-    private final PlayerManager playerManager;
     private final TauntManager tauntManager;
 
     public TauntListener(
             ArenaManager arenaManager,
-            PlayerManager playerManager,
-            TauntManager tauntManager
+            PlayerManager playerManager, TauntManager tauntManager
     ) {
         this.arenaManager = arenaManager;
-        this.playerManager = playerManager;
         this.tauntManager = tauntManager;
     }
 
     @EventHandler
-    public void onPlayerInteract(
-            PlayerInteractEvent event
-    ) {
-
-        Action action = event.getAction();
-
-        if (action != Action.RIGHT_CLICK_AIR
-                && action != Action.RIGHT_CLICK_BLOCK) {
-            return;
-        }
-
-        Player player = event.getPlayer();
-
-        ItemStack item = player.getInventory().getItemInMainHand();
-
-        if (item.getType() != Material.NOTE_BLOCK) {
-            return;
-        }
-
-        Arena arena = arenaManager.getArena(player);
-
-        if (arena == null) {
-            return;
-        }
-
-        if (arena.getState() != GameState.SEEKING) {
-            return;
-        }
-
-        Taunt taunt = tauntManager.getSelectedTaunt(
-                player.getUniqueId()
-        );
-
-        if (taunt == null) {
-            return;
-        }
-
-        taunt.play(player);
-
-        event.setCancelled(true);
-    }
-
-    @EventHandler
-    public void onInventoryClick(
-            InventoryClickEvent event
-    ) {
-
-        if (!ChatColor.stripColor(
-                event.getView().getTitle()
-        ).equalsIgnoreCase("Taunts")) {
-            return;
-        }
-
-        event.setCancelled(true);
-
-        if (!(event.getWhoClicked() instanceof Player player)) {
-            return;
-        }
-
-        if (event.getCurrentItem() == null) {
-            return;
-        }
-
-        String name = ChatColor.stripColor(
-                event.getCurrentItem()
-                        .getItemMeta()
-                        .getDisplayName()
-        );
-
-        for (Taunt taunt : tauntManager.getTaunts()) {
-
-            if (!taunt.getName().equalsIgnoreCase(name)) {
-                continue;
-            }
-
-            tauntManager.setSelectedTaunt(
-                    player.getUniqueId(),
-                    taunt.getId()
-            );
-
-            player.sendMessage(
-                    ChatColor.GREEN +
-                            "Selected Taunt: " +
-                            taunt.getName()
-            );
-
-            player.closeInventory();
-            break;
-        }
-    }
-
-    @EventHandler
-    public void onTauntInteract(
-            PlayerInteractEvent event
-    ) {
+    public void onPlayerInteract(PlayerInteractEvent event) {
 
         Action action = event.getAction();
 
@@ -151,20 +55,64 @@ public final class TauntListener implements Listener {
             return;
         }
 
-        if (arena.getState() != GameState.SEEKING) {
+        // Change this if your game uses a different state.
+        if (arena.getState() != GameState.HIDING) {
             return;
         }
 
-        Taunt taunt = tauntManager.getSelectedTaunt(
-                player.getUniqueId()
-        );
+        Taunt taunt = tauntManager.getSelectedTaunt(player.getUniqueId());
 
         if (taunt == null) {
+            player.sendMessage(ChatColor.RED + "You have not selected a taunt.");
             return;
         }
 
         taunt.play(player);
+        event.setCancelled(true);
+    }
+
+    @EventHandler
+    public void onInventoryClick(InventoryClickEvent event) {
+
+        if (!ChatColor.stripColor(event.getView().getTitle())
+                .equalsIgnoreCase("Taunts")) {
+            return;
+        }
 
         event.setCancelled(true);
+
+        if (!(event.getWhoClicked() instanceof Player player)) {
+            return;
+        }
+
+        ItemStack item = event.getCurrentItem();
+
+        if (item == null || item.getType().isAir()) {
+            return;
+        }
+
+        ItemMeta meta = item.getItemMeta();
+
+        if (meta == null || !meta.hasDisplayName()) {
+            return;
+        }
+
+        String name = ChatColor.stripColor(meta.getDisplayName());
+
+        for (Taunt taunt : tauntManager.getTaunts()) {
+
+            if (!taunt.getName().equalsIgnoreCase(name)) {
+                continue;
+            }
+
+            tauntManager.setSelectedTaunt(
+                    player.getUniqueId(),
+                    taunt.getId()
+            );
+
+            player.sendMessage(ChatColor.GREEN + "Selected Taunt: " + taunt.getName());
+            player.closeInventory();
+            return;
+        }
     }
 }

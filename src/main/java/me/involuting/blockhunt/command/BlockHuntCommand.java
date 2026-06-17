@@ -11,6 +11,7 @@ import me.involuting.blockhunt.game.arena.manager.ArenaManager;
 import me.involuting.blockhunt.game.manager.GameManager;
 import me.involuting.blockhunt.game.player.manager.PlayerManager;
 import me.involuting.blockhunt.game.state.GameState;
+import me.involuting.blockhunt.game.win.WinCondition;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -24,17 +25,19 @@ public class BlockHuntCommand implements CommandExecutor {
     private final PlayerManager playerManager;
     private final DisguiseManager disguiseManager;
     private final NPCManager npcManager;
+    private final WinCondition winCondition;
 
     public BlockHuntCommand(ArenaManager arenaManager,
                             GameManager gameManager,
                             PlayerManager playerManager,
-                            DisguiseManager disguiseManager, NPCManager npcManager) {
+                            DisguiseManager disguiseManager, NPCManager npcManager, WinCondition winCondition) {
 
         this.arenaManager = arenaManager;
         this.gameManager = gameManager;
         this.playerManager = playerManager;
         this.disguiseManager = disguiseManager;
         this.npcManager = npcManager;
+        this.winCondition = winCondition;
     }
 
     @Override
@@ -316,7 +319,7 @@ public class BlockHuntCommand implements CommandExecutor {
             return;
         }
 
-        Arena arena = new Arena(name);
+        Arena arena = new Arena(name, winCondition);
         arena.setLobbySpawn(player.getLocation());
 
         arenaManager.registerArena(arena);

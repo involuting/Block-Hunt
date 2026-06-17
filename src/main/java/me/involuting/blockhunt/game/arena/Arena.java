@@ -1,6 +1,7 @@
 package me.involuting.blockhunt.game.arena;
 
 import me.involuting.blockhunt.game.state.GameState;
+import me.involuting.blockhunt.game.win.WinCondition;
 import org.bukkit.Location;
 
 import java.util.HashSet;
@@ -14,6 +15,8 @@ public class Arena {
     private Location lobbySpawn;
     private Location hunterSpawn;
     private Location hiderSpawn;
+
+    private final WinCondition winCondition;
 
     private final Set<UUID> players = new HashSet<>();
 
@@ -29,8 +32,9 @@ public class Arena {
      */
     private int countdown = -1;
 
-    public Arena(String name) {
+    public Arena(String name, WinCondition winCondition) {
         this.name = name;
+        this.winCondition = winCondition;
     }
 
     public String getName() {
