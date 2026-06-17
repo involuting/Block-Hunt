@@ -2,6 +2,7 @@ package me.involuting.blockhunt.game.npc.listener;
 
 import me.involuting.blockhunt.game.arena.Arena;
 import me.involuting.blockhunt.game.arena.manager.ArenaManager;
+import me.involuting.blockhunt.game.manager.GameManager;
 import me.involuting.blockhunt.game.npc.BlockHuntNPC;
 import me.involuting.blockhunt.game.npc.manager.NPCManager;
 import me.involuting.blockhunt.game.state.GameState;
@@ -15,13 +16,15 @@ public final class NPCListener implements Listener {
 
     private final NPCManager npcManager;
     private final ArenaManager arenaManager;
+    private final GameManager gameManager;
 
     public NPCListener(
             NPCManager npcManager,
-            ArenaManager arenaManager
+            ArenaManager arenaManager, GameManager gameManager
     ) {
         this.npcManager = npcManager;
         this.arenaManager = arenaManager;
+        this.gameManager = gameManager;
     }
 
     @EventHandler
@@ -41,7 +44,7 @@ public final class NPCListener implements Listener {
 
         Player player = event.getPlayer();
 
-        if (arenaManager.getArena(player) != null) {
+        if (arenaManager.isInArena(player)) {
 
             player.sendMessage(
                     "§cYou are already in a Block Hunt game."
@@ -63,14 +66,17 @@ public final class NPCListener implements Listener {
 
         arenaManager.addPlayer(player, arena);
 
-        player.sendMessage(
-                "§aJoined Map §e" +
-                        arena.getName()
-        );
+        gameManager.startCountdown(arena);
 
+        player.sendMessage("");
+        player.sendMessage("§6§lBLOCK HUNT");
         player.sendMessage(
-                "§eWaiting for players..."
+                "§aJoined Map §e" + arena.getName()
         );
+        player.sendMessage(
+                "§7Players: §f" + arena.getPlayers().size()
+        );
+        player.sendMessage("");
     }
 
     private Arena findBestArena() {

@@ -34,8 +34,27 @@ public final class LocationUtil {
             return null;
         }
 
+        String worldName = section.getString("world");
+
+        if (worldName == null) {
+            return null;
+        }
+
+        var world = Bukkit.getWorld(worldName);
+
+        if (world == null) {
+
+            Bukkit.getLogger().warning(
+                    "[BlockHunt] Could not load world '" +
+                            worldName +
+                            "' for saved location."
+            );
+
+            return null;
+        }
+
         return new Location(
-                Bukkit.getWorld(section.getString("world")),
+                world,
                 section.getDouble("x"),
                 section.getDouble("y"),
                 section.getDouble("z"),

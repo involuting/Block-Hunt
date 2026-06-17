@@ -16,15 +16,14 @@ import java.util.UUID;
 
 public class ArenaManager {
 
-    private final GameManager gameManager;
+
 
     private final Map<String, Arena> arenas = new HashMap<>();
     private final Map<UUID, Arena> playerArenas = new HashMap<>();
 
     private final ArenaFile arenaFile;
 
-    public ArenaManager(GameManager gameManager, ArenaFile arenaFile) {
-        this.gameManager = gameManager;
+    public ArenaManager(ArenaFile arenaFile) {
         this.arenaFile = arenaFile;
     }
 
@@ -68,19 +67,29 @@ public class ArenaManager {
                 arena
         );
 
-        if (arena.getLobbySpawn() != null) {
+        if (arena.getLobbySpawn() != null
+                && arena.getLobbySpawn().getWorld() != null) {
+
             player.teleport(arena.getLobbySpawn());
+
+        } else {
+
+            player.sendMessage(
+                    "§cThis arena does not have a valid lobby spawn."
+            );
+
+            return;
         }
 
-        arena.setState(GameState.WAITING);
+        if (arena.getState() == GameState.ENDING) {
+            arena.setState(GameState.WAITING);
+        }
 
-
-        player.sendMessage("§eWaiting for players...");
         player.sendMessage("");
-
-        if (!gameManager.isCountdownRunning(arena)) {
-            gameManager.startCountdown(arena);
-        }
+        player.sendMessage("§6§lBLOCK HUNT");
+        player.sendMessage("§aJoined Arena §e" + arena.getName());
+        player.sendMessage("§7Players: §f" + arena.getPlayers().size());
+        player.sendMessage("");
     }
 
     public void removePlayer(Player player) {

@@ -21,6 +21,7 @@ import net.j4c0b3y.api.menu.MenuHandler;
 import org.bukkit.plugin.java.JavaPlugin;
 @Getter
 public final class BlockHunt extends JavaPlugin {
+   @Getter
    private static BlockHunt instance;
     private ArenaManager arenaManager;
     private PlayerManager playerManager;
@@ -31,10 +32,6 @@ public final class BlockHunt extends JavaPlugin {
     private ArenaFile arenaFile;
     private MenuHandler menuHandler;
     private WinCondition winCondition;
-
-    public static BlockHunt getInstance() {
-        return instance;
-    }
 
     public static void setInstance(BlockHunt instance) {
         BlockHunt.instance = instance;
@@ -70,7 +67,7 @@ public final class BlockHunt extends JavaPlugin {
                 disguiseRenderer
         );
 
-        this.arenaManager = new ArenaManager(gameManager, arenaFile);
+        this.arenaManager = new ArenaManager(arenaFile);
 
         this.gameManager = new GameManager(
                 arenaManager, playerManager, disguiseManager
@@ -127,7 +124,7 @@ public final class BlockHunt extends JavaPlugin {
         getServer().getPluginManager().registerEvents(
                 new NPCListener(
                         npcManager,
-                        arenaManager
+                        arenaManager, gameManager
                 ),
                 this
         );
@@ -159,5 +156,9 @@ public final class BlockHunt extends JavaPlugin {
                         gameManager, playerManager, disguiseManager, npcManager
                 )
         );
+    }
+
+    public static BlockHunt getInstance() {
+        return instance;
     }
 }

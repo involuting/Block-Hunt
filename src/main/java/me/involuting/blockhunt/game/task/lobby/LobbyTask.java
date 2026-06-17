@@ -30,10 +30,13 @@ public class LobbyTask extends BukkitRunnable {
     @Override
     public void run() {
 
-        if (arena == null
-                || arena.getState() != GameState.WAITING) {
-
+        if (arena == null) {
             cancel();
+            return;
+        }
+
+        if (arena.getState() != GameState.WAITING) {
+            gameManager.stopCountdown(arena);
             return;
         }
 
@@ -67,19 +70,7 @@ public class LobbyTask extends BukkitRunnable {
 
         arena.setCountdown(countdown);
 
-        if (countdown <= 0) {
-
-            arena.setCountdown(0);
-
-            cancel();
-
-            gameManager.startGame(arena);
-            return;
-        }
-
-        if (countdown == 10
-                || countdown == 5
-                || countdown <= 3) {
+        if (shouldBroadcastCountdown(countdown)) {
 
             broadcast(
                     "§eGame starting in §6"
@@ -90,7 +81,24 @@ public class LobbyTask extends BukkitRunnable {
             );
         }
 
+        if (countdown <= 0) {
+
+            arena.setCountdown(0);
+
+            gameManager.stopCountdown(arena);
+            gameManager.startGame(arena);
+
+            return;
+        }
+
         countdown--;
+    }
+
+    private boolean shouldBroadcastCountdown(int seconds) {
+
+        return seconds == 10
+                || seconds == 5
+                || seconds <= 3;
     }
 
     private int getOnlinePlayers() {
@@ -101,9 +109,7 @@ public class LobbyTask extends BukkitRunnable {
 
             Player player = Bukkit.getPlayer(uuid);
 
-            if (player != null
-                    && player.isOnline()) {
-
+            if (player != null && player.isOnline()) {
                 count++;
             }
         }
@@ -117,8 +123,7 @@ public class LobbyTask extends BukkitRunnable {
 
             Player player = Bukkit.getPlayer(uuid);
 
-            if (player == null
-                    || !player.isOnline()) {
+            if (player == null || !player.isOnline()) {
                 continue;
             }
 
