@@ -71,11 +71,6 @@ public class DisguiseRenderer {
         player.setInvisible(true);
     }
 
-    /**
-     * Only use this if you want moving disguises.
-     * Mineplex-style Block Hunt does NOT need this.
-     */
-
 
     public void updateBlock(Player player,
                             BlockType blockType) {
