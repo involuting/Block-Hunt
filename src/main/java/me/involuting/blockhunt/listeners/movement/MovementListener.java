@@ -58,7 +58,7 @@ public class MovementListener implements Listener {
             return;
         }
 
-        // Freeze hunters during hiding phase
+
         if (arena.getState() == GameState.HIDING
                 && data.getRole() == Role.HUNTER) {
 
@@ -66,12 +66,12 @@ public class MovementListener implements Listener {
             return;
         }
 
-        // Ignore spectators
+
         if (data.getRole() == Role.SPECTATOR) {
             return;
         }
 
-        // Ignore pure rotation
+
         boolean moved =
                 from.getWorld() != to.getWorld()
                         || from.getBlockX() != to.getBlockX()

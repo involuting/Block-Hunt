@@ -8,6 +8,9 @@ import me.involuting.blockhunt.game.disguise.render.DisguiseRenderer;
 import me.involuting.blockhunt.game.disguise.task.SolidifyTask;
 import me.involuting.blockhunt.game.npc.listener.NPCListener;
 import me.involuting.blockhunt.game.npc.manager.NPCManager;
+import me.involuting.blockhunt.game.taunts.impl.FireworkTaunt;
+import me.involuting.blockhunt.game.taunts.listener.TauntListener;
+import me.involuting.blockhunt.game.taunts.manager.TauntManager;
 import me.involuting.blockhunt.game.win.WinCondition;
 import me.involuting.blockhunt.listeners.combat.CombatListener;
 import me.involuting.blockhunt.listeners.damage.DamageListener;
@@ -18,6 +21,7 @@ import me.involuting.blockhunt.game.arena.manager.ArenaManager;
 import me.involuting.blockhunt.game.manager.GameManager;
 import me.involuting.blockhunt.game.player.manager.PlayerManager;
 import net.j4c0b3y.api.menu.MenuHandler;
+import org.bukkit.block.data.type.Fire;
 import org.bukkit.plugin.java.JavaPlugin;
 @Getter
 public final class BlockHunt extends JavaPlugin {
@@ -32,6 +36,7 @@ public final class BlockHunt extends JavaPlugin {
     private ArenaFile arenaFile;
     private MenuHandler menuHandler;
     private WinCondition winCondition;
+    private TauntManager tauntManager;
 
     public static void setInstance(BlockHunt instance) {
         BlockHunt.instance = instance;
@@ -45,6 +50,7 @@ public final class BlockHunt extends JavaPlugin {
         registerListeners();
         registerTasks();
         registerCommands();
+        registerTaunts();
 
         this.menuHandler = new MenuHandler(this);
 
@@ -74,6 +80,8 @@ public final class BlockHunt extends JavaPlugin {
         );
 
         this.npcManager = new NPCManager(this, arenaManager);
+
+        tauntManager = new TauntManager();
 
         arenaManager.loadArenas();
     }
@@ -137,6 +145,16 @@ public final class BlockHunt extends JavaPlugin {
                 ),
                 this
         );
+
+        getServer().getPluginManager().registerEvents(
+                new TauntListener(
+                        arenaManager,
+                        playerManager,
+                        tauntManager
+
+                ),
+                this
+        );
     }
 
     private void registerTasks() {
@@ -156,6 +174,11 @@ public final class BlockHunt extends JavaPlugin {
                         gameManager, playerManager, disguiseManager, npcManager
                 )
         );
+    }
+
+    private  void registerTaunts(){
+        tauntManager.registerTaunt(new FireworkTaunt());
+
     }
 
     public static BlockHunt getInstance() {
