@@ -186,7 +186,7 @@ public class GameManager {
                                 .build());
 
         player.getInventory()
-                .setItem(1,
+                .setItem(3,
                         new ItemBuilder(Material.NOTE_BLOCK)
                                 .name("§aUse Equipped Taunt")
                                 .build());
@@ -362,5 +362,60 @@ public class GameManager {
         return countdowns.get(
                 arena.getName().toLowerCase()
         );
+    }
+
+    public int getHiderCount(Arena arena) {
+
+        int count = 0;
+
+        for (UUID uuid : arena.getPlayers()) {
+
+            Player player = Bukkit.getPlayer(uuid);
+
+            if (player == null) {
+                continue;
+            }
+
+            BlockHuntPlayer data = playerManager.get(player);
+
+            if (data != null && data.getRole() == Role.HIDER) {
+                count++;
+            }
+        }
+
+        return count;
+    }
+
+    public int getHunterCount(Arena arena) {
+
+        int count = 0;
+
+        for (UUID uuid : arena.getPlayers()) {
+
+            Player player = Bukkit.getPlayer(uuid);
+
+            if (player == null) {
+                continue;
+            }
+
+            BlockHuntPlayer data = playerManager.get(player);
+
+            if (data != null && data.getRole() == Role.HUNTER) {
+                count++;
+            }
+        }
+
+        return count;
+    }
+
+    public int getRemainingTime(Arena arena) {
+
+        GameTask task = getGame(arena);
+
+        if (task == null) {
+            return 0;
+        }
+
+        return task.getRemainingTime();
     }
 }

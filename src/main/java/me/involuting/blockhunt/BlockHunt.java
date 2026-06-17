@@ -20,7 +20,9 @@ import me.involuting.blockhunt.listeners.player.PlayerListener;
 import me.involuting.blockhunt.game.arena.manager.ArenaManager;
 import me.involuting.blockhunt.game.manager.GameManager;
 import me.involuting.blockhunt.game.player.manager.PlayerManager;
+import me.involuting.blockhunt.scoreboard.ScoreboardAdapter;
 import net.j4c0b3y.api.menu.MenuHandler;
+import org.bukkit.Bukkit;
 import org.bukkit.block.data.type.Fire;
 import org.bukkit.plugin.java.JavaPlugin;
 @Getter
@@ -37,6 +39,7 @@ public final class BlockHunt extends JavaPlugin {
     private MenuHandler menuHandler;
     private WinCondition winCondition;
     private TauntManager tauntManager;
+    private ScoreboardAdapter scoreboardAdapter;
 
     public static void setInstance(BlockHunt instance) {
         BlockHunt.instance = instance;
@@ -53,6 +56,8 @@ public final class BlockHunt extends JavaPlugin {
         registerTaunts();
 
         this.menuHandler = new MenuHandler(this);
+
+
 
 
 
@@ -83,6 +88,8 @@ public final class BlockHunt extends JavaPlugin {
 
         tauntManager = new TauntManager();
 
+        scoreboardAdapter = new ScoreboardAdapter(arenaManager, gameManager);
+
         arenaManager.loadArenas();
     }
 
@@ -103,7 +110,7 @@ public final class BlockHunt extends JavaPlugin {
     private void registerListeners() {
 
         getServer().getPluginManager().registerEvents(
-                new PlayerListener(playerManager),
+                new PlayerListener(playerManager, scoreboardAdapter ),
                 this
         );
 
@@ -165,6 +172,14 @@ public final class BlockHunt extends JavaPlugin {
                 playerManager,
                 disguiseManager
         ).runTaskTimer(this, 20L, 20L);
+
+
+        Bukkit.getScheduler().runTaskTimer(
+                this,
+                scoreboardAdapter::updateAll,
+                20L,
+                20L
+        );
 
     }
 

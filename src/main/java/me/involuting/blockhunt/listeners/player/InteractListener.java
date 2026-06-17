@@ -5,7 +5,7 @@ import me.involuting.blockhunt.game.player.BlockHuntPlayer;
 import me.involuting.blockhunt.game.role.Role;
 import me.involuting.blockhunt.game.taunts.manager.TauntManager;
 import me.involuting.blockhunt.game.taunts.menu.TauntMenu;
-import me.involuting.blockhunt.gui.BlockSelectionMenu;
+import me.involuting.blockhunt.game.disguise.gui.BlockSelectionMenu;
 import me.involuting.blockhunt.game.player.manager.PlayerManager;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;

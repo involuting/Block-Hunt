@@ -19,6 +19,7 @@ public class GameTask extends BukkitRunnable {
     private int hideTime;
     private int gameTime;
 
+
     public GameTask(Arena arena,
                     WinCondition winCondition,
                     int hideTime,
@@ -154,6 +155,10 @@ public class GameTask extends BukkitRunnable {
                 minutes,
                 remainingSeconds
         );
+    }
+
+    public int getRemainingTime() {
+        return gameTime;
     }
 
     public boolean isHiding() {

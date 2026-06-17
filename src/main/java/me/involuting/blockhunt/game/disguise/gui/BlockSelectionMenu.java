@@ -1,9 +1,9 @@
-package me.involuting.blockhunt.gui;
+package me.involuting.blockhunt.game.disguise.gui;
 
 import me.involuting.blockhunt.game.disguise.manager.DisguiseManager;
 import me.involuting.blockhunt.game.disguise.type.BlockType;
 import me.involuting.blockhunt.game.player.manager.PlayerManager;
-import me.involuting.blockhunt.gui.button.BlockSelectionButton;
+import me.involuting.blockhunt.game.disguise.gui.button.BlockSelectionButton;
 import net.j4c0b3y.api.menu.Menu;
 import net.j4c0b3y.api.menu.MenuSize;
 import net.j4c0b3y.api.menu.layer.impl.BackgroundLayer;

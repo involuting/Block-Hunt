@@ -1,4 +1,4 @@
-package me.involuting.blockhunt.gui.button;
+package me.involuting.blockhunt.game.disguise.gui.button;
 
 import me.involuting.blockhunt.game.disguise.manager.DisguiseManager;
 import me.involuting.blockhunt.game.disguise.type.BlockType;
