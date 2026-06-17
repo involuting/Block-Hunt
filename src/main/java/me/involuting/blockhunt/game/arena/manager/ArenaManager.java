@@ -5,6 +5,7 @@ import me.involuting.blockhunt.game.arena.Arena;
 import me.involuting.blockhunt.game.manager.GameManager;
 import me.involuting.blockhunt.game.state.GameState;
 import me.involuting.blockhunt.util.LocationUtil;
+import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
@@ -75,7 +76,7 @@ public class ArenaManager {
         } else {
 
             player.sendMessage(
-                    "§cThis arena does not have a valid lobby spawn."
+                    "§cThis map does not have a valid lobby spawn."
             );
 
             return;
@@ -85,10 +86,23 @@ public class ArenaManager {
             arena.setState(GameState.WAITING);
         }
 
+        int currentPlayers = arena.getPlayers().size();
+        int maxPlayers = arena.getMaxPlayers();
+
+        for (UUID uuid : arena.getPlayers()) {
+            Player arenaPlayer = Bukkit.getPlayer(uuid);
+
+            if (arenaPlayer != null) {
+                arenaPlayer.sendMessage(
+                        "§a" + player.getName()
+                                + " joined the game §7("
+                                + currentPlayers + "/" + maxPlayers + ")"
+                );
+            }
+        }
+
         player.sendMessage("");
         player.sendMessage("§6§lBLOCK HUNT");
-        player.sendMessage("§aJoined Arena §e" + arena.getName());
-        player.sendMessage("§7Players: §f" + arena.getPlayers().size());
         player.sendMessage("");
     }
 
@@ -210,30 +224,22 @@ public class ArenaManager {
         );
     }
 
-    public Arena findJoinableArena() {
 
-        Arena bestArena = null;
+    public Arena findAvailableArena() {
 
-        for (Arena arena : arenas.values()) {
+        for (Arena arena : getArenas()) {
 
-            if (arena.getState() == GameState.ENDING) {
+            if (arena.getState() != GameState.WAITING) {
                 continue;
             }
 
-            if (arena.isFull()) {
+            if (arena.getPlayers().size() >= 16) {
                 continue;
             }
 
-            if (bestArena == null) {
-                bestArena = arena;
-                continue;
-            }
-
-            if (arena.getPlayers().size() > bestArena.getPlayers().size()) {
-                bestArena = arena;
-            }
+            return arena;
         }
 
-        return bestArena;
+        return null;
     }
 }

@@ -95,34 +95,12 @@ public class BlockHuntCommand implements CommandExecutor {
 
             case "spawnnpc" -> {
 
-                if (args.length < 2) {
-
-                    player.sendMessage(
-                            "§cUsage: /blockhunt spawnnpc <arena>"
-                    );
-
-                    return true;
-                }
-
-                Arena arena = arenaManager.getArena(args[1]);
-
-                if (arena == null) {
-
-                    player.sendMessage(
-                            "§cArena not found."
-                    );
-
-                    return true;
-                }
-
                 npcManager.create(
-                        arena,
                         player.getLocation()
                 );
 
                 player.sendMessage(
-                        "§aSuccessfully spawned a Block Hunt NPC for §e"
-                                + arena.getName()
+                        "§aSuccessfully spawned a Quick Join NPC."
                 );
 
                 return true;

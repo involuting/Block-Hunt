@@ -28,83 +28,37 @@ public final class NPCListener implements Listener {
     }
 
     @EventHandler
-    public void onInteract(PlayerInteractEntityEvent event) {
+    public void onNPCClick(PlayerInteractEntityEvent event) {
 
         if (!(event.getRightClicked() instanceof Villager villager)) {
             return;
         }
 
-        BlockHuntNPC npc = npcManager.get(villager);
-
-        if (npc == null) {
+        if (!npcManager.isNPC(villager)) {
             return;
         }
-
-        event.setCancelled(true);
 
         Player player = event.getPlayer();
 
-        if (arenaManager.isInArena(player)) {
-
-            player.sendMessage(
-                    "§cYou are already in a Block Hunt game."
-            );
-
-            return;
-        }
-
-        Arena arena = findBestArena();
+        Arena arena = arenaManager.findAvailableArena();
 
         if (arena == null) {
 
             player.sendMessage(
-                    "§cNo available maps found."
+                    "§cThere are no available maps."
             );
 
             return;
         }
 
-        arenaManager.addPlayer(player, arena);
+        arenaManager.addPlayer(
+                player,
+                arena
+        );
 
         gameManager.startCountdown(arena);
-
-        player.sendMessage("");
-        player.sendMessage("§6§lBLOCK HUNT");
-        player.sendMessage(
-                "§aJoined Map §e" + arena.getName()
-        );
-        player.sendMessage(
-                "§7Players: §f" + arena.getPlayers().size()
-        );
-        player.sendMessage("");
     }
 
-    private Arena findBestArena() {
 
-        Arena bestArena = null;
 
-        for (Arena arena : arenaManager.getArenas()) {
-
-            if (arena.getState() == GameState.ENDING) {
-                continue;
-            }
-
-            if (arena.isFull()) {
-                continue;
-            }
-
-            if (bestArena == null) {
-                bestArena = arena;
-                continue;
-            }
-
-            if (arena.getPlayers().size()
-                    > bestArena.getPlayers().size()) {
-
-                bestArena = arena;
-            }
-        }
-
-        return bestArena;
-    }
 }

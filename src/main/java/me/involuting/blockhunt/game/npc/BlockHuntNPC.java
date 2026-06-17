@@ -1,6 +1,8 @@
 package me.involuting.blockhunt.game.npc;
 
 import me.involuting.blockhunt.game.arena.Arena;
+import me.involuting.blockhunt.game.arena.manager.ArenaManager;
+import me.involuting.blockhunt.game.state.GameState;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Display;
@@ -18,7 +20,7 @@ public final class BlockHuntNPC {
     private static final double PLAYERS_Y = 2.40;
     private static final double ACTION_Y = 2.05;
 
-    private final Arena arena;
+    private final ArenaManager arenaManager;
 
     private final Villager villager;
 
@@ -31,11 +33,11 @@ public final class BlockHuntNPC {
 
     public BlockHuntNPC(
             JavaPlugin plugin,
-            Arena arena,
+            ArenaManager arenaManager,
             Location location
     ) {
 
-        this.arena = arena;
+        this.arenaManager = arenaManager;
 
         this.villager = spawnVillager(location);
 
@@ -51,7 +53,7 @@ public final class BlockHuntNPC {
 
         this.playersDisplay = createDisplay(
                 location.clone().add(0, PLAYERS_Y, 0),
-                "§f0/0 Players"
+                "§f0 Players"
         );
 
         this.actionDisplay = createDisplay(
@@ -74,101 +76,43 @@ public final class BlockHuntNPC {
 
     private void update() {
 
-        int players = arena.getPlayerCount();
-        int maxPlayers = arena.getMaxPlayers();
+        int totalPlayers = 0;
+        int availableArenas = 0;
+
+        for (Arena arena : arenaManager.getArenas()) {
+
+            totalPlayers += arena.getPlayers().size();
+
+            if (arena.getState() == GameState.WAITING
+                    && arena.getPlayers().size() < arena.getMaxPlayers()) {
+
+                availableArenas++;
+            }
+        }
 
         playersDisplay.setText(
-                "§f" + players +
-                        "§7/§f" + maxPlayers +
-                        " Players"
+                "§f" + totalPlayers + " Players Online"
         );
 
-        switch (arena.getState()) {
+        if (availableArenas > 0) {
 
-            case WAITING -> {
+            statusDisplay.setText(
+                    "§aAvailable"
+            );
 
-                if (arena.isCountingDown()) {
+            actionDisplay.setText(
+                    "§aClick to Join"
+            );
 
-                    statusDisplay.setText(
-                            "§eStarting"
-                    );
+        } else {
 
-                    actionDisplay.setText(
-                            "§6Starting in §f" +
-                                    arena.getCountdown() +
-                                    "§6s"
-                    );
+            statusDisplay.setText(
+                    "§cNo Arenas"
+            );
 
-                } else {
-
-                    statusDisplay.setText(
-                            "§aWaiting"
-                    );
-
-                    int needed =
-                            arena.getPlayersNeeded();
-
-                    if (needed > 0) {
-
-                        actionDisplay.setText(
-                                "§eNeed " +
-                                        needed +
-                                        " more player" +
-                                        (needed == 1 ? "" : "s")
-                        );
-
-                    } else {
-
-                        actionDisplay.setText(
-                                "§aReady to Start"
-                        );
-                    }
-                }
-            }
-
-            case STARTING -> {
-
-                statusDisplay.setText(
-                        "§eStarting"
-                );
-
-                actionDisplay.setText(
-                        "§6Teleporting..."
-                );
-            }
-
-            case SEEKING -> {
-
-                statusDisplay.setText(
-                        "§cIn Game"
-                );
-
-                actionDisplay.setText(
-                        "§7Match in Progress"
-                );
-            }
-
-            case ENDING -> {
-
-                statusDisplay.setText(
-                        "§7Ending"
-                );
-
-                actionDisplay.setText(
-                        "§7Returning to Lobby..."
-                );
-            }
-
-            default -> {
-
-                statusDisplay.setText(
-                        "§8Unknown"
-                );
-
-                actionDisplay.setText(
-                        "§8N/A"
-                );
-            }
+            actionDisplay.setText(
+                    "§7Waiting for Arena"
+            );
         }
     }
 
@@ -201,13 +145,10 @@ public final class BlockHuntNPC {
                 .spawnEntity(location, EntityType.TEXT_DISPLAY);
 
         display.setText(text);
-
         display.setBillboard(Display.Billboard.CENTER);
-
         display.setSeeThrough(true);
         display.setShadowed(true);
         display.setDefaultBackground(false);
-
         display.setPersistent(true);
 
         return display;
@@ -215,10 +156,6 @@ public final class BlockHuntNPC {
 
     public Villager getVillager() {
         return villager;
-    }
-
-    public Arena getArena() {
-        return arena;
     }
 
     public void remove() {

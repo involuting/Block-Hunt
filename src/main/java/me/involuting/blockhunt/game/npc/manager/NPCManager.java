@@ -1,6 +1,6 @@
 package me.involuting.blockhunt.game.npc.manager;
 
-import me.involuting.blockhunt.game.arena.Arena;
+import me.involuting.blockhunt.game.arena.manager.ArenaManager;
 import me.involuting.blockhunt.game.npc.BlockHuntNPC;
 import org.bukkit.Location;
 import org.bukkit.entity.Entity;
@@ -15,22 +15,21 @@ import java.util.UUID;
 public final class NPCManager {
 
     private final JavaPlugin plugin;
+    private final ArenaManager arenaManager;
 
     private final Map<UUID, BlockHuntNPC> npcs =
             new HashMap<>();
 
-    public NPCManager(JavaPlugin plugin) {
+    public NPCManager(JavaPlugin plugin, ArenaManager arenaManager) {
         this.plugin = plugin;
+        this.arenaManager = arenaManager;
     }
 
-    public BlockHuntNPC create(
-            Arena arena,
-            Location location
-    ) {
+    public BlockHuntNPC create(Location location) {
 
         BlockHuntNPC npc = new BlockHuntNPC(
                 plugin,
-                arena,
+                arenaManager,
                 location
         );
 
@@ -62,7 +61,6 @@ public final class NPCManager {
     }
 
     public BlockHuntNPC get(UUID uuid) {
-
         return npcs.get(uuid);
     }
 
@@ -77,8 +75,7 @@ public final class NPCManager {
 
     public void remove(UUID uuid) {
 
-        BlockHuntNPC npc =
-                npcs.remove(uuid);
+        BlockHuntNPC npc = npcs.remove(uuid);
 
         if (npc == null) {
             return;
@@ -95,7 +92,6 @@ public final class NPCManager {
     }
 
     public int size() {
-
         return npcs.size();
     }
 
