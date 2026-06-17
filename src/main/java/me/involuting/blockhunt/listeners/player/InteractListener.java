@@ -68,7 +68,7 @@ public class InteractListener implements Listener {
             event.setCancelled(true);
 
             event.getPlayer().sendMessage(
-                    "§eTaunts coming soon!"
+                    "§eTaunts are coming very soon"
             );
         }
     }

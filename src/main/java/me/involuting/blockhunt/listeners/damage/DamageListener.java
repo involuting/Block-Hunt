@@ -1,10 +1,8 @@
 package me.involuting.blockhunt.listeners.damage;
 
-
-
 import me.involuting.blockhunt.game.player.BlockHuntPlayer;
-import me.involuting.blockhunt.game.role.Role;
 import me.involuting.blockhunt.game.player.manager.PlayerManager;
+import me.involuting.blockhunt.game.role.Role;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -29,25 +27,18 @@ public class DamageListener implements Listener {
             return;
         }
 
-        BlockHuntPlayer victimData =
-                playerManager.get(victim);
+        BlockHuntPlayer victimData = playerManager.get(victim);
+        BlockHuntPlayer attackerData = playerManager.get(attacker);
 
-        BlockHuntPlayer attackerData =
-                playerManager.get(attacker);
-
-        if (attackerData.getRole() != Role.HUNTER) {
+        if (victimData == null || attackerData == null) {
             event.setCancelled(true);
             return;
         }
 
-        if (victimData.getRole() != Role.HIDER) {
+        // Only hunter -> hider hits are allowed
+        if (attackerData.getRole() != Role.HUNTER
+                || victimData.getRole() != Role.HIDER) {
             event.setCancelled(true);
-            return;
         }
-
-        victim.setHealth(0.0);
-
-        attackerData.addKill();
-        victimData.addDeath();
     }
 }

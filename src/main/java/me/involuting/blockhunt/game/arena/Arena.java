@@ -22,6 +22,13 @@ public class Arena {
     private int minPlayers = 2;
     private int maxPlayers = 8;
 
+    /**
+     * -1 = waiting for players
+     * >0 = countdown running
+     * 0 = game starting/started
+     */
+    private int countdown = -1;
+
     public Arena(String name) {
         this.name = name;
     }
@@ -66,12 +73,24 @@ public class Arena {
         players.remove(uuid);
     }
 
-    public boolean isFull() {
-        return players.size() >= maxPlayers;
-    }
-
     public int getPlayerCount() {
         return players.size();
+    }
+
+    public boolean isFull() {
+        return getPlayerCount() >= maxPlayers;
+    }
+
+    public boolean isEmpty() {
+        return players.isEmpty();
+    }
+
+    public int getPlayersNeeded() {
+        return Math.max(0, minPlayers - getPlayerCount());
+    }
+
+    public boolean canStart() {
+        return getPlayerCount() >= minPlayers;
     }
 
     public GameState getState() {
@@ -96,5 +115,26 @@ public class Arena {
 
     public void setMaxPlayers(int maxPlayers) {
         this.maxPlayers = maxPlayers;
+    }
+
+    public int getCountdown() {
+        return countdown;
+    }
+
+    public void setCountdown(int countdown) {
+        this.countdown = countdown;
+    }
+
+    public boolean isCountingDown() {
+        return countdown > 0;
+    }
+
+    public void reset() {
+
+        players.clear();
+
+        state = GameState.WAITING;
+
+        countdown = -1;
     }
 }

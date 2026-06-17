@@ -1,26 +1,25 @@
 package me.involuting.blockhunt.game.npc.listener;
 
-
-
 import me.involuting.blockhunt.game.arena.Arena;
+import me.involuting.blockhunt.game.arena.manager.ArenaManager;
 import me.involuting.blockhunt.game.npc.BlockHuntNPC;
 import me.involuting.blockhunt.game.npc.manager.NPCManager;
-import me.involuting.blockhunt.game.arena.manager.ArenaManager;
-
+import me.involuting.blockhunt.game.state.GameState;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Villager;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 
-public class NPCListener implements Listener {
+public final class NPCListener implements Listener {
 
     private final NPCManager npcManager;
     private final ArenaManager arenaManager;
 
-    public NPCListener(NPCManager npcManager,
-                       ArenaManager arenaManager) {
-
+    public NPCListener(
+            NPCManager npcManager,
+            ArenaManager arenaManager
+    ) {
         this.npcManager = npcManager;
         this.arenaManager = arenaManager;
     }
@@ -38,15 +37,57 @@ public class NPCListener implements Listener {
             return;
         }
 
-        Arena arena = npc.getArena();
+        event.setCancelled(true);
 
-        if (arena == null) {
+        Player player = event.getPlayer();
+
+        if (arenaManager.getArena(player) != null) {
+
+            player.sendMessage(
+                    "§cYou are already in a Block Hunt game."
+            );
             return;
         }
 
-        arenaManager.addPlayer(
-                event.getPlayer(),
-                arena
-        );
+        Arena arena = findBestArena();
+
+        if (arena == null) {
+
+            player.sendMessage(
+                    "§cNo available arenas found."
+            );
+            return;
+        }
+
+        arenaManager.addPlayer(player, arena);
+    }
+
+    private Arena findBestArena() {
+
+        Arena bestArena = null;
+
+        for (Arena arena : arenaManager.getArenas()) {
+
+            if (arena.getState() == GameState.ENDING) {
+                continue;
+            }
+
+            if (arena.isFull()) {
+                continue;
+            }
+
+            if (bestArena == null) {
+                bestArena = arena;
+                continue;
+            }
+
+            if (arena.getPlayers().size()
+                    > bestArena.getPlayers().size()) {
+
+                bestArena = arena;
+            }
+        }
+
+        return bestArena;
     }
 }

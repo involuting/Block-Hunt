@@ -7,6 +7,7 @@ import me.involuting.blockhunt.game.player.BlockHuntPlayer;
 import me.involuting.blockhunt.game.player.manager.PlayerManager;
 import me.involuting.blockhunt.game.role.Role;
 import me.involuting.blockhunt.game.state.GameState;
+import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -19,32 +20,29 @@ public class MovementListener implements Listener {
     private final DisguiseManager disguiseManager;
     private final ArenaManager arenaManager;
 
-    public MovementListener(PlayerManager playerManager,
-                            DisguiseManager disguiseManager,
-                            ArenaManager arenaManager) {
-
+    public MovementListener(
+            PlayerManager playerManager,
+            DisguiseManager disguiseManager,
+            ArenaManager arenaManager
+    ) {
         this.playerManager = playerManager;
         this.disguiseManager = disguiseManager;
         this.arenaManager = arenaManager;
     }
 
-    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onMove(PlayerMoveEvent event) {
 
-        if (event.getTo() == null) {
+        Location from = event.getFrom();
+        Location to = event.getTo();
+
+        if (to == null) {
             return;
         }
 
         Player player = event.getPlayer();
 
         if (!player.isOnline() || player.isDead()) {
-            return;
-        }
-
-        // Ignore head rotation
-        if (event.getFrom().getBlockX() == event.getTo().getBlockX()
-                && event.getFrom().getBlockY() == event.getTo().getBlockY()
-                && event.getFrom().getBlockZ() == event.getTo().getBlockZ()) {
             return;
         }
 
@@ -56,16 +54,34 @@ public class MovementListener implements Listener {
 
         Arena arena = arenaManager.getArena(player);
 
-        // Freeze hunters during hiding phase
-        if (arena != null
-                && arena.getState() == GameState.HIDING
-                && data.getRole() == Role.HUNTER) {
-
-            event.setTo(event.getFrom());
+        if (arena == null) {
             return;
         }
 
-        // Hider movement handling
+        // Freeze hunters during hiding phase
+        if (arena.getState() == GameState.HIDING
+                && data.getRole() == Role.HUNTER) {
+
+            event.setTo(from);
+            return;
+        }
+
+        // Ignore spectators
+        if (data.getRole() == Role.SPECTATOR) {
+            return;
+        }
+
+        // Ignore pure rotation
+        boolean moved =
+                from.getWorld() != to.getWorld()
+                        || from.getBlockX() != to.getBlockX()
+                        || from.getBlockY() != to.getBlockY()
+                        || from.getBlockZ() != to.getBlockZ();
+
+        if (!moved) {
+            return;
+        }
+
         if (data.getRole() != Role.HIDER) {
             return;
         }

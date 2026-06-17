@@ -12,7 +12,6 @@ import java.util.UUID;
 public class LobbyTask extends BukkitRunnable {
 
     private static final int START_COUNTDOWN = 10;
-    private static final int MIN_PLAYERS = 2;
 
     private final Arena arena;
     private final GameManager gameManager;
@@ -20,9 +19,10 @@ public class LobbyTask extends BukkitRunnable {
     private int countdown = START_COUNTDOWN;
     private boolean waitingMessageSent;
 
-    public LobbyTask(Arena arena,
-                     GameManager gameManager) {
-
+    public LobbyTask(
+            Arena arena,
+            GameManager gameManager
+    ) {
         this.arena = arena;
         this.gameManager = gameManager;
     }
@@ -39,7 +39,9 @@ public class LobbyTask extends BukkitRunnable {
 
         int playerCount = getOnlinePlayers();
 
-        if (playerCount < MIN_PLAYERS) {
+        if (playerCount < arena.getMinPlayers()) {
+
+            arena.setCountdown(-1);
 
             if (!waitingMessageSent) {
 
@@ -63,7 +65,11 @@ public class LobbyTask extends BukkitRunnable {
             waitingMessageSent = false;
         }
 
+        arena.setCountdown(countdown);
+
         if (countdown <= 0) {
+
+            arena.setCountdown(0);
 
             cancel();
 
@@ -95,7 +101,9 @@ public class LobbyTask extends BukkitRunnable {
 
             Player player = Bukkit.getPlayer(uuid);
 
-            if (player != null && player.isOnline()) {
+            if (player != null
+                    && player.isOnline()) {
+
                 count++;
             }
         }
@@ -109,7 +117,8 @@ public class LobbyTask extends BukkitRunnable {
 
             Player player = Bukkit.getPlayer(uuid);
 
-            if (player == null || !player.isOnline()) {
+            if (player == null
+                    || !player.isOnline()) {
                 continue;
             }
 

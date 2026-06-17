@@ -2,6 +2,7 @@ package me.involuting.blockhunt.game.arena.manager;
 
 import me.involuting.blockhunt.config.ArenaFile;
 import me.involuting.blockhunt.game.arena.Arena;
+import me.involuting.blockhunt.game.state.GameState;
 import me.involuting.blockhunt.util.LocationUtil;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -176,5 +177,32 @@ public class ArenaManager {
                 config.createSection(path),
                 location
         );
+    }
+
+    public Arena findJoinableArena() {
+
+        Arena bestArena = null;
+
+        for (Arena arena : arenas.values()) {
+
+            if (arena.getState() == GameState.ENDING) {
+                continue;
+            }
+
+            if (arena.isFull()) {
+                continue;
+            }
+
+            if (bestArena == null) {
+                bestArena = arena;
+                continue;
+            }
+
+            if (arena.getPlayers().size() > bestArena.getPlayers().size()) {
+                bestArena = arena;
+            }
+        }
+
+        return bestArena;
     }
 }

@@ -239,6 +239,7 @@ public class GameManager {
             arenaManager.removePlayer(player);
         }
 
+        arena.setCountdown(-1);
         arena.setState(GameState.WAITING);
     }
 
@@ -253,6 +254,8 @@ public class GameManager {
         if (countdowns.containsKey(key)) {
             return;
         }
+
+        arena.setCountdown(-1);
 
         LobbyTask task = new LobbyTask(
                 arena,
@@ -273,6 +276,8 @@ public class GameManager {
         if (arena == null) {
             return;
         }
+
+        arena.setCountdown(-1);
 
         LobbyTask task = countdowns.remove(
                 arena.getName().toLowerCase()
@@ -323,5 +328,27 @@ public class GameManager {
         }
 
         return players;
+    }
+
+    public boolean isCountdownRunning(Arena arena) {
+
+        if (arena == null) {
+            return false;
+        }
+
+        return countdowns.containsKey(
+                arena.getName().toLowerCase()
+        );
+    }
+
+    public LobbyTask getCountdown(Arena arena) {
+
+        if (arena == null) {
+            return null;
+        }
+
+        return countdowns.get(
+                arena.getName().toLowerCase()
+        );
     }
 }

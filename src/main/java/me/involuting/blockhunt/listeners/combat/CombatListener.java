@@ -1,21 +1,19 @@
 package me.involuting.blockhunt.listeners.combat;
 
-import me.involuting.blockhunt.BlockHunt;
 import me.involuting.blockhunt.game.arena.Arena;
+import me.involuting.blockhunt.game.arena.manager.ArenaManager;
 import me.involuting.blockhunt.game.disguise.manager.DisguiseManager;
 import me.involuting.blockhunt.game.player.BlockHuntPlayer;
+import me.involuting.blockhunt.game.player.manager.PlayerManager;
 import me.involuting.blockhunt.game.role.Role;
 import me.involuting.blockhunt.game.state.GameState;
 import me.involuting.blockhunt.game.win.WinCondition;
-import me.involuting.blockhunt.game.arena.manager.ArenaManager;
-import me.involuting.blockhunt.game.player.manager.PlayerManager;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
-import org.bukkit.event.entity.PlayerDeathEvent;
 
 import java.util.UUID;
 
@@ -26,11 +24,12 @@ public class CombatListener implements Listener {
     private final DisguiseManager disguiseManager;
     private final WinCondition winCondition;
 
-    public CombatListener(PlayerManager playerManager,
-                          ArenaManager arenaManager,
-                          DisguiseManager disguiseManager,
-                          WinCondition winCondition) {
-
+    public CombatListener(
+            PlayerManager playerManager,
+            ArenaManager arenaManager,
+            DisguiseManager disguiseManager,
+            WinCondition winCondition
+    ) {
         this.playerManager = playerManager;
         this.arenaManager = arenaManager;
         this.disguiseManager = disguiseManager;
@@ -48,29 +47,37 @@ public class CombatListener implements Listener {
             return;
         }
 
-        Arena arena = arenaManager.getArena(attacker);
+        Arena attackerArena = arenaManager.getArena(attacker);
+        Arena victimArena = arenaManager.getArena(victim);
 
-        if (arena == null) {
+        if (attackerArena == null || victimArena == null) {
             return;
         }
 
-        if (arena != arenaManager.getArena(victim)) {
+        if (!attackerArena.equals(victimArena)) {
             return;
         }
 
+        // No PvP damage should ever occur in Block Hunt
         event.setCancelled(true);
 
-        if (victim.getGameMode() == GameMode.SPECTATOR) {
+        if (attackerArena.getState() != GameState.SEEKING) {
             return;
         }
 
-        if (arena.getState() != GameState.SEEKING) {
+        if (attacker.getGameMode() == GameMode.SPECTATOR
+                || victim.getGameMode() == GameMode.SPECTATOR) {
             return;
         }
 
         BlockHuntPlayer attackerData = playerManager.get(attacker);
         BlockHuntPlayer victimData = playerManager.get(victim);
 
+        if (attackerData == null || victimData == null) {
+            return;
+        }
+
+        // Only hunters can eliminate hiders
         if (attackerData.getRole() != Role.HUNTER) {
             return;
         }
@@ -79,49 +86,48 @@ public class CombatListener implements Listener {
             return;
         }
 
+        eliminateHider(victim, victimData);
+
         attackerData.addKill();
 
-        eliminateHider(victim);
-
         broadcast(
-                arena,
-                "§e" + victim.getName()
+                attackerArena,
+                "§c✖ §e" + victim.getName()
                         + " §7was found by §c"
                         + attacker.getName()
         );
 
-        winCondition.checkHuntersWin(arena);
+        winCondition.checkHuntersWin(attackerArena);
     }
 
-    @EventHandler
-    public void onDeath(PlayerDeathEvent event){
-        Player player = event.getPlayer();
+    private void eliminateHider(Player player, BlockHuntPlayer data) {
 
-        event.setDeathMessage(null);
+        Arena arena = arenaManager.getArena(player);
 
-        event.setShowDeathMessages(false);
-    }
+        if (arena == null) {
+            return;
+        }
 
-    private void eliminateHider(Player player) {
+        if (arena.getState() != GameState.SEEKING) {
+            return;
+        }
 
-        BlockHuntPlayer data = playerManager.get(player);
+        if (data.getRole() != Role.HIDER) {
+            return;
+        }
 
         disguiseManager.removeDisguise(player);
 
-        Bukkit.getScheduler().runTask(
-                BlockHunt.getInstance(),
-                () -> {
+        data.addDeath();
+        data.setRole(Role.SPECTATOR);
 
-                    data.addDeath();
-                    data.setRole(Role.SPECTATOR);
+        player.setGameMode(GameMode.SPECTATOR);
 
-                    player.setGameMode(GameMode.SPECTATOR);
-
-                    player.teleport(
-                            player.getLocation().clone().add(0, 1, 0)
-                    );
-                }
+        player.teleport(
+                player.getLocation().clone().add(0.0, 1.0, 0.0)
         );
+
+        player.sendMessage("§cYou have been found!");
     }
 
     private void broadcast(Arena arena, String message) {
@@ -130,9 +136,11 @@ public class CombatListener implements Listener {
 
             Player player = Bukkit.getPlayer(uuid);
 
-            if (player != null) {
-                player.sendMessage(message);
+            if (player == null) {
+                continue;
             }
+
+            player.sendMessage(message);
         }
     }
 }
