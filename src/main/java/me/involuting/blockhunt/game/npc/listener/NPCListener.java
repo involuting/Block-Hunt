@@ -46,6 +46,7 @@ public final class NPCListener implements Listener {
             player.sendMessage(
                     "§cYou are already in a Block Hunt game."
             );
+
             return;
         }
 
@@ -54,12 +55,22 @@ public final class NPCListener implements Listener {
         if (arena == null) {
 
             player.sendMessage(
-                    "§cNo available arenas found."
+                    "§cNo available maps found."
             );
+
             return;
         }
 
         arenaManager.addPlayer(player, arena);
+
+        player.sendMessage(
+                "§aJoined Map §e" +
+                        arena.getName()
+        );
+
+        player.sendMessage(
+                "§eWaiting for players..."
+        );
     }
 
     private Arena findBestArena() {

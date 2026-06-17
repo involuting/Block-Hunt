@@ -70,7 +70,7 @@ public final class BlockHunt extends JavaPlugin {
                 disguiseRenderer
         );
 
-        this.arenaManager = new ArenaManager(arenaFile);
+        this.arenaManager = new ArenaManager(gameManager, arenaFile);
 
         this.gameManager = new GameManager(
                 arenaManager, playerManager, disguiseManager

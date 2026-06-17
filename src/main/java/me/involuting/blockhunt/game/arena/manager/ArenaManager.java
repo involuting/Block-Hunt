@@ -2,6 +2,7 @@ package me.involuting.blockhunt.game.arena.manager;
 
 import me.involuting.blockhunt.config.ArenaFile;
 import me.involuting.blockhunt.game.arena.Arena;
+import me.involuting.blockhunt.game.manager.GameManager;
 import me.involuting.blockhunt.game.state.GameState;
 import me.involuting.blockhunt.util.LocationUtil;
 import org.bukkit.configuration.ConfigurationSection;
@@ -15,12 +16,15 @@ import java.util.UUID;
 
 public class ArenaManager {
 
+    private final GameManager gameManager;
+
     private final Map<String, Arena> arenas = new HashMap<>();
     private final Map<UUID, Arena> playerArenas = new HashMap<>();
 
     private final ArenaFile arenaFile;
 
-    public ArenaManager(ArenaFile arenaFile) {
+    public ArenaManager(GameManager gameManager, ArenaFile arenaFile) {
+        this.gameManager = gameManager;
         this.arenaFile = arenaFile;
     }
 
@@ -49,6 +53,10 @@ public class ArenaManager {
 
     public void addPlayer(Player player, Arena arena) {
 
+        if (player == null || arena == null) {
+            return;
+        }
+
         if (isInArena(player)) {
             removePlayer(player);
         }
@@ -59,6 +67,20 @@ public class ArenaManager {
                 player.getUniqueId(),
                 arena
         );
+
+        if (arena.getLobbySpawn() != null) {
+            player.teleport(arena.getLobbySpawn());
+        }
+
+        arena.setState(GameState.WAITING);
+
+
+        player.sendMessage("§eWaiting for players...");
+        player.sendMessage("");
+
+        if (!gameManager.isCountdownRunning(arena)) {
+            gameManager.startCountdown(arena);
+        }
     }
 
     public void removePlayer(Player player) {
