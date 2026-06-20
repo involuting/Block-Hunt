@@ -61,25 +61,25 @@ Players are divided into **Hiders** and **Hunters**. Hiders disguise themselves 
 
 | Command | Description |
 |----------|-------------|
-| `/blockhunt setlobby <arena>` | Set the lobby spawn |
-| `/blockhunt sethiderspawn <arena>` | Set the hider spawn |
-| `/blockhunt sethunterspawn <arena>` | Set the hunter spawn |
+| `/blockhunt setlobby arena` | Set the lobby spawn |
+| `/blockhunt sethiderspawn arena` | Set the hider spawn |
+| `/blockhunt sethunterspawn arena` | Set the hunter spawn |
 
 ## NPC Commands
 
 | Command | Description |
 |----------|-------------|
-| `/blockhunt spawnnpc <arena>` | Spawn a join NPC |
+| `/blockhunt spawnnpc` | Spawn a join NPC |
 
 ## Debug Commands
 
 | Command | Description |
 |----------|-------------|
-| `/blockhunt disguise <block>` | Disguise as a block |
+| `/blockhunt disguise block` | Disguise as a block |
 | `/blockhunt undisguise` | Remove your disguise |
 | `/blockhunt solidify` | Force solidify |
 | `/blockhunt unsolidify` | Cancel solidification |
-| `/blockhunt role <role>` | Change your role |
+| `/blockhunt role role` | Change your role |
 | `/blockhunt stats` | View player statistics |
 
 ---
