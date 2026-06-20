@@ -50,12 +50,12 @@ Players are divided into **Hiders** and **Hunters**. Hiders disguise themselves 
 
 | Command | Description |
 |----------|-------------|
-| `/blockhunt create <name>` | Create an arena |
-| `/blockhunt delete <arena>` | Delete an arena |
+| `/blockhunt create name` | Create an arena |
+| `/blockhunt delete arena` | Delete an arena |
 | `/blockhunt list` | List all arenas |
-| `/blockhunt join <arena>` | Join an arena |
+| `/blockhunt join arena` | Join an arena |
 | `/blockhunt leave` | Leave the current arena |
-| `/blockhunt start <arena>` | Force start a game |
+| `/blockhunt start arena` | Force start a game |
 
 ## Arena Setup
 
